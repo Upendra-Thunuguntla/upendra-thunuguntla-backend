@@ -1,6 +1,7 @@
 import os
 import json
 import base64
+import re
 import urllib.request
 import urllib.error
 from http.server import BaseHTTPRequestHandler
@@ -41,8 +42,9 @@ class handler(BaseHTTPRequestHandler):
             source_page = payload.get('source_page', 'https://upendra.fyi')
             timestamp = payload.get('timestamp', '')
 
-            # Basic Validation
-            if not email or '@' not in email or '.' not in email:
+            # Strict Regex Validation for Email Address
+            EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+            if not email or not re.match(EMAIL_REGEX, email):
                 self._send_json_response(400, {'error': 'Please provide a valid email address.'})
                 return
 
@@ -84,7 +86,7 @@ class handler(BaseHTTPRequestHandler):
             visitor_payload = {
                 'from': from_email,
                 'to': [email],
-                'subject': 'Upendra Thunuguntla — Resume & Enterprise Integration Portfolio',
+                'subject': 'Upendra Thunuguntla - Resume & Enterprise Integration Portfolio',
                 'html': visitor_html
             }
 
@@ -154,7 +156,7 @@ def get_visitor_email_html(name, resume_url):
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Upendra Thunuguntla — Resume</title>
+  <title>Upendra Thunuguntla - Resume</title>
 </head>
 <body style="margin:0; padding:0; background-color:#0f172a; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#e2e8f0;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#0f172a; padding: 40px 20px;">
@@ -169,7 +171,7 @@ def get_visitor_email_html(name, resume_url):
                 Upendra Thunuguntla
               </h1>
               <p style="margin:4px 0 0 0; font-size:14px; color:#e0f2fe;">
-                Senior MuleSoft & Enterprise Integration Architect
+                Senior Integration Consultant
               </p>
             </td>
           </tr>
@@ -188,10 +190,10 @@ def get_visitor_email_html(name, resume_url):
               <div style="background-color:#0f172a; border-left:4px solid #3b82f6; border-radius:4px; padding:16px 20px; margin:24px 0;">
                 <p style="margin:0 0 8px 0; font-weight:600; color:#f8fafc; font-size:14px;">⚡ Core Specializations:</p>
                 <ul style="margin:0; padding-left:20px; color:#94a3b8; font-size:14px;">
-                  <li>MuleSoft Anypoint Platform (CloudHub 2.0, RTF, On-Prem)</li>
-                  <li>REST / SOAP / GraphQL API Architecture & RAML / OpenAPI Spec Design</li>
+                  <li>MuleSoft Anypoint Platform</li>
+                  <li>REST / SOAP / GraphQL API Architecture & RAML Spec Design</li>
                   <li>DataWeave 2.0 Complex Transformations & Enterprise Integration Patterns</li>
-                  <li>CI/CD Automation, Custom Connectors, Mule 3 to Mule 4 Migrations</li>
+                  <li>CI/CD Automation, Custom Connectors, Mule Migrations</li>
                 </ul>
               </div>
 
@@ -229,59 +231,6 @@ def get_visitor_email_html(name, resume_url):
       </td>
     </tr>
   </table>
-</body>
-</html>"""
-
-
-def get_notification_email_html(data):
-  email = escape_html(data.get('email', ''))
-  name = escape_html(data.get('name', 'Not provided'))
-  company = escape_html(data.get('company', 'Not provided'))
-  source_page = escape_html(data.get('sourcePage', 'https://upendra.fyi'))
-  timestamp = escape_html(data.get('timestamp', ''))
-  ip = escape_html(data.get('ip', 'Unknown'))
-
-  return f"""<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>New Resume Lead</title></head>
-<body style="font-family: Arial, sans-serif; background:#f1f5f9; padding: 20px; color:#334155;">
-  <div style="max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 8px; border:1px solid #e2e8f0; padding: 24px;">
-    <h2 style="margin-top:0; color:#0f172a; font-size:18px;">📄 New Resume Request Captured</h2>
-    <p style="font-size:14px; color:#64748b;">Someone just requested your resume on <strong>upendra.fyi</strong>!</p>
-    
-    <table width="100%" border="0" cellspacing="0" cellpadding="8" style="font-size:14px; border-collapse: collapse; margin-top:16px;">
-      <tr style="border-bottom:1px solid #f1f5f9;">
-        <td width="30%" style="font-weight:bold; color:#475569;">Email:</td>
-        <td style="color:#0284c7; font-weight:bold;">{email}</td>
-      </tr>
-      <tr style="border-bottom:1px solid #f1f5f9;">
-        <td style="font-weight:bold; color:#475569;">Name:</td>
-        <td>{name or 'Not provided'}</td>
-      </tr>
-      <tr style="border-bottom:1px solid #f1f5f9;">
-        <td style="font-weight:bold; color:#475569;">Company / Role:</td>
-        <td>{company or 'Not provided'}</td>
-      </tr>
-      <tr style="border-bottom:1px solid #f1f5f9;">
-        <td style="font-weight:bold; color:#475569;">Timestamp:</td>
-        <td>{timestamp}</td>
-      </tr>
-      <tr style="border-bottom:1px solid #f1f5f9;">
-        <td style="font-weight:bold; color:#475569;">Source Page:</td>
-        <td><a href="{source_page}" target="_blank" style="color:#2563eb;">{source_page}</a></td>
-      </tr>
-      <tr>
-        <td style="font-weight:bold; color:#475569;">Visitor IP:</td>
-        <td style="font-family:monospace;">{ip}</td>
-      </tr>
-    </table>
-
-    <div style="margin-top:24px; text-align:center;">
-      <a href="mailto:{email}?subject=Following%20up%20from%20upendra.fyi" style="display:inline-block; background:#0284c7; color:#ffffff; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:13px;">
-        ✉️ Reply to Lead
-      </a>
-    </div>
-  </div>
 </body>
 </html>"""
 
