@@ -1,0 +1,3 @@
+# Vercel Python runtime requirements
+resend>=0.8.0
+requests>=2.31.0
